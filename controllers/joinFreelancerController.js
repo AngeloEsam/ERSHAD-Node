@@ -581,7 +581,7 @@ const insertSheet = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json("Sorry, something went wrong...");
+    res.status(500).json({message:"Sorry, something went wrong..."});
   }
 };
 
