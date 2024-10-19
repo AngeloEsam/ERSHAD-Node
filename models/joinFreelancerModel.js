@@ -12,12 +12,12 @@ const joinFreelancerSchema = new mongoose.Schema(
     graduationYear: { type: String },
     willingToRelocate: { type: String },
     cv: { type: String, required: true },
-    idNumber: { type: String, required: true },
+    idNumber: { type: String}, //hint
     englishLevel: {
       type: String,
-      required: true,
+     //hint
     },
-    country: { type: String, required: true },
+    country: { type: String },  //hint
     canWorkRemotely: { type: String },
     maritalStatus: {
       type: String,

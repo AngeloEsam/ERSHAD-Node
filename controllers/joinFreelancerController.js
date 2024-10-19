@@ -422,7 +422,7 @@ const exportTableToCsv = async (req, res) => {
     const freelancers = await JoinFreelaner.find({ status: "تم الموافقة" });
 
     const headers = [
-      "createdAt", 
+      "createdAt",
       "title",
       "fullName",
       "phoneNumber",
@@ -438,12 +438,13 @@ const exportTableToCsv = async (req, res) => {
       "country",
       "canWorkRemotely",
       "maritalStatus",
-      "status"
+      "status",
     ];
 
     const rows = freelancers.map((freelancer) => ({
-      createdAt: freelancer.createdAt ? 
-        freelancer.createdAt.toISOString().split('T')[0] : "", 
+      createdAt: freelancer.createdAt
+        ? freelancer.createdAt.toISOString().split("T")[0]
+        : "",
       title: freelancer.title,
       fullName: freelancer.fullName,
       phoneNumber: freelancer.phoneNumber,
@@ -453,13 +454,15 @@ const exportTableToCsv = async (req, res) => {
       degree: freelancer.degree,
       graduationYear: freelancer.graduationYear,
       willingToRelocate: freelancer.willingToRelocate,
-      cv: freelancer.cv ? `${req.protocol}://${req.headers.host}/uploads/cvs/${freelancer.cv}` : "",
+      cv: freelancer.cv
+        ? `${req.protocol}://${req.headers.host}/uploads/cvs/${freelancer.cv}`
+        : "",
       idNumber: freelancer.idNumber,
       englishLevel: freelancer.englishLevel,
       country: freelancer.country,
       canWorkRemotely: freelancer.canWorkRemotely,
       maritalStatus: freelancer.maritalStatus,
-      status: freelancer.status
+      status: freelancer.status,
     }));
 
     const csv = json2csv(rows, { header: true, fields: headers });
@@ -477,13 +480,15 @@ const exportTableToCsv = async (req, res) => {
 
     res.status(200).json({
       message: "CSV file created successfully",
-      downloadLink: downloadLink
+      downloadLink: downloadLink,
     });
   } catch (error) {
     console.error("Error exporting to CSV:", error.message);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 
 const insertSheet = async (req, res) => {
@@ -500,71 +505,66 @@ const insertSheet = async (req, res) => {
         rows: 1,
       },
       columnToKey: {
-        A: "createdAt",
-        B: "title",
-        C: "fullName",
-        D: "phoneNumber",
-        E: "email",
-        F: "city",
-        G: "jobTitle",
-        H: "degree",
-        I: "graduationYear",
-        J: "willingToRelocate",
-        K: "cv",
-        L: "idNumber",
-        M: "englishLevel",
-        N: "canWorkRemotely",
+        A: "title",
+        B: "fullName",
+        C: "phoneNumber",
+        D: "email",
+        E: "city",
+        F: "jobTitle",
+        G: "degree",
+        H: "graduationYear",
+        I: "willingToRelocate",
+        J: "cv",
+        K: "idNumber",
+        L: "englishLevel",
+        M: "canWorkRemotely",
       },
     });
 
+    // عرض كامل للبيانات القادمة من ملف الإكسل
+   // console.log("Excel Data:", excelData);
+
+    // افحص اسم الورقة داخل الملف
+    const sheetName = Object.keys(excelData)[0];
+   // console.log("Sheet Name:", sheetName);
+    const sheetData = excelData[sheetName];
+
+    // تأكد من أن البيانات موجودة
+    if (!sheetData || sheetData.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "No data found in the Excel file" });
+    }
+
     let arrayToInsert = [];
 
-    for (var i = 0; i < excelData.data.length; i++) {
-      // تحقق من الحقول المطلوبة
-      if (
-        !excelData.data[i]["fullName"] ||
-        !excelData.data[i]["email"] ||
-        !excelData.data[i]["phoneNumber"] ||
-        !excelData.data[i]["idNumber"] ||
-        !excelData.data[i]["city"] ||
-        !excelData.data[i]["englishLevel"] ||
-        !excelData.data[i]["title"] ||
-        !excelData.data[i]["degree"] ||
-        !excelData.data[i]["graduationYear"] ||
-        !excelData.data[i]["cv"]
-      ) {
-        console.log("Missing required fields in row", i);
-        continue;
-      }
-
-      // تحقق مما إذا كانت graduationYear نصًا قبل استخدام match
-      const graduationYearValue = excelData.data[i]["graduationYear"];
+    for (var i = 0; i < sheetData.length; i++) {
+      // تحقق من graduationYear
+      const graduationYearValue = sheetData[i]["graduationYear"];
       let graduationYear = null;
 
       if (typeof graduationYearValue === "string") {
-        // استخراج السنة فقط من النص
         const match = graduationYearValue.match(/\d{4}/);
         graduationYear = match ? parseInt(match[0]) : null;
       } else if (typeof graduationYearValue === "number") {
-        // إذا كانت القيمة عددًا بالفعل
         graduationYear = graduationYearValue;
       }
 
       var singleRow = {
-        createdAt: excelData.data[i]["createdAt"],
-        title: excelData.data[i]["title"],
-        fullName: excelData.data[i]["fullName"],
-        phoneNumber: excelData.data[i]["phoneNumber"],
-        email: excelData.data[i]["email"],
-        city: excelData.data[i]["city"],
-        jobTitle: excelData.data[i]["jobTitle"],
-        degree: excelData.data[i]["degree"],
-        graduationYear: graduationYear, // استخدام القيمة المستخرجة
-        willingToRelocate: excelData.data[i]["willingToRelocate"],
-        cv: excelData.data[i]["cv"],
-        idNumber: excelData.data[i]["idNumber"],
-        englishLevel: excelData.data[i]["englishLevel"],
-        canWorkRemotely: excelData.data[i]["canWorkRemotely"],
+        title: sheetData[i]["title"],
+        fullName: sheetData[i]["fullName"],
+        phoneNumber: sheetData[i]["phoneNumber"],
+        email: sheetData[i]["email"],
+        city: sheetData[i]["city"],
+        jobTitle: sheetData[i]["jobTitle"],
+        degree: sheetData[i]["degree"],
+        graduationYear: graduationYear,
+        willingToRelocate: sheetData[i]["willingToRelocate"],
+        cv: sheetData[i]["cv"],
+        idNumber: sheetData[i]["idNumber"],
+        englishLevel: sheetData[i]["englishLevel"],
+        canWorkRemotely: sheetData[i]["canWorkRemotely"],
+        status: "تم الموافقة", // إضافة حالة "تمت الموافقة"
       };
 
       arrayToInsert.push(singleRow);
@@ -572,7 +572,9 @@ const insertSheet = async (req, res) => {
 
     if (arrayToInsert.length > 0) {
       const data = await JoinFreelaner.insertMany(arrayToInsert);
-      await fs.unlink(filePath);
+      fs.unlink(filePath, (err) => { // حذف الملف بعد الإدخال
+        if (err) console.error("Error deleting file:", err);
+      });
       res.status(201).json({ message: "success", data });
     } else {
       res.status(400).json({ message: "No valid data to insert" });
@@ -582,6 +584,8 @@ const insertSheet = async (req, res) => {
     res.status(500).json("Sorry, something went wrong...");
   }
 };
+
+
 
 module.exports = {
   applyToWork,
